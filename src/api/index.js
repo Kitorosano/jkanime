@@ -16,7 +16,8 @@ router.get('/', (req, res) => {
         'getAnimesListByLetter': '/api/v1/letter/[:letter]/[:page]',
         'searchAnime': '/api/v1/search/[:title]',
         'getAnimeVideoByServer': '/api/v1/video/[:id]/[:chapter]',
-        'schedule': '/api/v1/schedule/[:day]'
+        'schedule': '/api/v1/schedule/[:day]',
+        'scheduleToday': '/api/v1/scheduleToday'
       }
     ]  
   });

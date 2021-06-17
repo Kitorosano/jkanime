@@ -2,7 +2,7 @@ const cheerio = require('cheerio');
 const fetch = require('node-fetch');
 const axios = require('axios');
 const { parseTable } = require('@joshuaavalon/cheerio-table-parser');
-const {url, searchUrl, searchUrlLetter, genderUrl, moviesUrl, ovasUrl , calenderUrl} = require('./urls');
+const {url, searchUrl, searchUrlLetter, genderUrl, moviesUrl, ovasUrl , calenderUrl, todayUrl} = require('./urls');
 
 
 /****
@@ -25,87 +25,88 @@ function btoa(str) {
 global.btoa = btoa;
 
 
-async function getAnimeVideoByServer(id , chapter) {
-  const { data } = await axios.get(`${url}${id}/${chapter}`);
-  const $ = cheerio.load(data);
-  const scripts = $('script');
-  const totalEps = $('div#container div#reproductor-box div ul li').length;
-  const serverNames = [];
-  let servers = [];
+// async function getAnimeVideoByServer(id , chapter) {
+//   const { data } = await axios.get(`${url}${id}/${chapter}`);
+//   const $ = cheerio.load(data);
+//   const scripts = $('script');
+//   const totalEps = $('div#container div#reproductor-box div ul li').length;
+//   const serverNames = [];
+//   let servers = [];
 
-  $('div#container div#reproductor-box div ul li').each((index , element) =>{
-    const $element = $(element);
-    const serverName = $element.find('a').text();
-    serverNames.push(serverName);
-  })
+//   $('div#container div#reproductor-box div ul li').each((index , element) =>{
+//     const $element = $(element);
+//     const serverName = $element.find('a').text();
+//     serverNames.push(serverName);
+//   })
 
-  for(let i = 0; i < scripts.length; i++){
-    const $script = $(scripts[i]);
-    const contents = $script.html();
-    try{
-      // There is a script on the page that will load the iframe dynamically
-      // Here we find the script and then request the iframe URL directly
-      if ((contents || '').includes('var video = [];')) {
-        Array.from({length: totalEps} , (v , k) =>{
-          let index = Number(k + 1);
-          let videoPageURL = contents.split(`video[${index}] = \'<iframe class="player_conte" src="`)[1].split('"')[0];
-          servers.push({iframe: videoPageURL});
-        });
-      }
-    }catch(err) {
-      return null;
-    }
-  }
-  let serverList = [];
-  let serverTempList = [];
-  for(const [key , value] of Object.entries(servers)) {
-    let video = await getVideoURL(value.iframe)
-    serverTempList.push(video);
-  }
-  Array.from({length: serverTempList.length} , (v , k) =>{
-    let name = serverNames[k];
-    let video = serverTempList[k];
-    serverList.push({server: name, video: video});
-  });
+//   for(let i = 0; i < scripts.length; i++){
+//     const $script = $(scripts[i]);
+//     const contents = $script.html();
+//     try{
+//       // There is a script on the page that will load the iframe dynamically
+//       // Here we find the script and then request the iframe URL directly
+//       if ((contents || '').includes('var video = [];')) {
+//         Array.from({length: totalEps} , (v , k) =>{
+//           let index = Number(k + 1);
+//           let videoPageURL = contents.split(`video[${index}] = \'<iframe class="player_conte" src="`)[1].split('"')[0];
+//           servers.push({iframe: videoPageURL});
+//         });
+//       }
+//     }catch(err) {
+//       return null;
+//     }
+//   }
+//   let serverList = [];
+//   let serverTempList = [];
+//   for(const [key , value] of Object.entries(servers)) {
+//     let video = await getVideoURL(value.iframe)
+//     serverTempList.push(video);
+//   }
+//   Array.from({length: serverTempList.length} , (v , k) =>{
+//     let name = serverNames[k];
+//     let video = serverTempList[k];
+//     serverList.push({server: name, video: video});
+//   });
 
-  return await Promise.all(serverList);
-}
+//   return await Promise.all(serverList);
+// }
 
-async function getVideoURL(url) {
-  // This requests the underlying iframe page
-  const { data } = await axios.get(url);
-  const $ = cheerio.load(data);
-  const video = $('video');
-  if(video.length){
-    // Sometimes the video is directly embedded
-    const src = $(video).find('source').attr('src');
-    return src || null;
-  }
-  else{
-    // If the video is not embedded, there is obfuscated code that will create a video element
-    // Here we run the code to get the underlying video url
-    const scripts = $('script');
-    // The obfuscated code uses a variable called l which is the window / global object
-    const l = global;
-    // The obfuscated code uses a variable called ll which is String
-    const ll = String;
-    const $script2 = $(scripts[1]).html();
-    // Kind of dangerous, but the code is very obfuscated so its hard to tell how it decrypts the URL
-    eval($script2);
-    // The code above sets a variable called ss that is the mp4 URL
-    return l.ss || null;
-  }
-}
+// async function getVideoURL(url) {
+//   // This requests the underlying iframe page
+//   const { data } = await axios.get(url);
+//   const $ = cheerio.load(data);
+//   const video = $('video');
+//   if(video.length){
+//     // Sometimes the video is directly embedded
+//     const src = $(video).find('source').attr('src');
+//     return src || null;
+//   }
+//   else{
+//     // If the video is not embedded, there is obfuscated code that will create a video element
+//     // Here we run the code to get the underlying video url
+//     const scripts = $('script');
+//     // The obfuscated code uses a variable called l which is the window / global object
+//     const l = global;
+//     // The obfuscated code uses a variable called ll which is String
+//     const ll = String;
+//     const $script2 = $(scripts[1]).html();
+//     // Kind of dangerous, but the code is very obfuscated so its hard to tell how it decrypts the URL
+//     eval($script2);
+//     // The code above sets a variable called ss that is the mp4 URL
+//     return l.ss || null;
+//   }
+// }
 
 const latestAnimeAdded = async() =>{
   const res = await fetch(`${url}`);
   const body = await res.text();
+  console.log(body)
   const $ = cheerio.load(body);
   const promises = [];
-  $('.portada-box').each(function (index, element) {
+  $('.anime__item').each(function (index, element) {
     const $element = $(element);
-    const title = $element.find('h2.portada-title a').attr('title');
-    const id = $element.find('h2.portada-title a').attr('href').split('/')[3];
+    const title = $element.find('h5').children('a').html()
+    const id = $element.find('a').attr('href').split('/')[3];
     const poster = $element.find('a').children('img').attr('src');
     promises.push(animeContentHandler(id).then(extra => ({
       title: title,
@@ -262,9 +263,9 @@ const animeContentHandler = async(id) => {
   const $ = cheerio.load(body);
   const eps_temp_list = [];
   let episodes_aired = '';
-  $('div#container div.left-container div.navigation a').each(async(index , element) => {
+  $('div.container div.row div.epcontent ').each(async(index , element) => {
       const $element = $(element);
-      const total_eps = $element.text();
+      const total_eps = $element.find('a').attr('href');
       eps_temp_list.push(total_eps);
   })
   try{episodes_aired = eps_temp_list[0].split('-')[1].trim();}catch(err){}
@@ -297,37 +298,49 @@ const schedule = async(day) =>{
   const body = await res.text();
   const $ = cheerio.load(body);
   const promises = [];
-  $('div#content div.full-container div.content-box div#tabla div.app-layout div.box.semana').eq(Number(day - 1)).each((index , element) =>{
+  $('div#timetable .timetable-column').eq(Number(day - 1)).each((index , element) =>{ //para el dia
     const $element = $(element);
-    $element.find('div.cajas div.box').each((i , el) =>{
+    $element.find('.timetable-column-show').each((i, el) => { //para cada anime
       const $el = $(el);
-      const title = $el.find('a h3').text();
-      const id = $el.find('a').attr('href').split('/')[3];
-      const poster = $el.find('a').children('img').attr('src');
-      promises.push(animeContentHandler(id).then(extra => ({
-        title: title,
-        id: id,
-        poster: poster,
-        type: extra[0] ? extra[0].type : null,
-        synopsis: extra[0] ? extra[0].sinopsis : null,
-        state: extra[0] ? extra[0].state : null,
-        episodes: extra[0] ? extra[0].episodes : null,
-        episodeList: extra[0] ? extra[0].episodeList : null
-      })))
+      const title = $el.find('h2').text().trim();
+      const id = $el.find('a').attr('href').split('/')[1];
+      const poster = $el.find('a picture source').attr('srcset')
+
+      const _episode = $el.find('.time-bar .show-episode').text().replace(/(\r\n|\n|\r)/gm, "");
+      const episode = _episode.split('Ep')[1] ;
+
+      const _time = $el.find('.time-bar .show-air-time').text().replace(/(\r\n|\n|\r)/gm, "");
+      let time = _time.split(' ')[0]
+
+      if(_time.split(' ')[1] === 'PM') {
+        let hour = Number(time.split(':')[0]),
+            min  = time.split(':')[1];
+
+        hour+=12;
+        time = hour + ':' + min
+      }
+      
+      promises.push({
+        title,
+        id,
+        poster,
+        episode,
+        time
+      })
     })
   });
 
   return await Promise.all(promises);
-};
+}; //FINISHED
 
 
 module.exports = {
+  // getAnimeVideoByServer,
   latestAnimeAdded,
   getAnimeOvas,
   getAnimeMovies,
   getAnimesByGender,
   getAnimesListByLetter,
   searchAnime,
-  getAnimeVideoByServer,
-  schedule
+  schedule,
 }

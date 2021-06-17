@@ -97,6 +97,16 @@ router.get('/schedule/:day', (req , res) => {
       console.log(err)
     });
 });
+// router.get('/scheduleToday', (req , res) => {
+//   api.scheduleToday()
+//     .then(scheduleToday => {
+//       res.status(200).json({
+//         scheduleToday
+//       });
+//     }).catch((err) =>{
+//       console.log(err)
+//     });
+// });
 
 
 module.exports = router;
