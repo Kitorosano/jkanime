@@ -326,13 +326,12 @@ const schedule = async(day) =>{
         id,
         poster,
         episode,
-        time,
-        day
+        time
       })
     })
   });
 
-  return await Promise.all(promises);
+  return {day, schedule: await Promise.all(promises)}
 }; //FINISHED
 
 
