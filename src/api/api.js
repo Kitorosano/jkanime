@@ -304,7 +304,8 @@ const schedule = async(day) =>{
       const $el = $(el);
       const title = $el.find('h2').text().trim();
       const id = $el.find('a').attr('href').split('/')[1];
-      const poster = $el.find('a picture source').attr('srcset')
+      const poster = $el.find('a.show-link picture source').attr('data-srcset')
+      console.log(poster)
 
       const _episode = $el.find('.time-bar .show-episode').text().replace(/(\r\n|\n|\r)/gm, "");
       const episode = _episode.split('Ep')[1] ;
