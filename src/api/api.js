@@ -331,7 +331,7 @@ const schedule = async(day) =>{
     })
   });
 
-  return {day, schedule: await Promise.all(promises)}
+  return await Promise.all(promises)
 }; //FINISHED
 
 
