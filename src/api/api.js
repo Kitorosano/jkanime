@@ -326,7 +326,8 @@ const schedule = async(day) =>{
         id,
         poster,
         episode,
-        time
+        time,
+        day
       })
     })
   });
