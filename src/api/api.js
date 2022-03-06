@@ -298,7 +298,7 @@ const schedule = async(day) =>{
   const body = await res.text();
   const $ = cheerio.load(body);
   const promises = [];
-  $('div#timetable .timetable-column').eq(Number(day - 1)).each((index , element) =>{ //para el dia
+  $('div#timetable .timetable-column').eq(Number(day)).each((index , element) =>{ //para el dia
     const $element = $(element);
     $element.find('.timetable-column-show').each((i, el) => { //para cada anime
       const $el = $(el);
