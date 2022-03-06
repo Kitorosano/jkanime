@@ -305,7 +305,7 @@ const schedule = async(day) =>{
       const title = $el.find('h2').text().trim();
       const id = $el.find('a').attr('href').split('/')[1];
       // const id = $el.attr('showid');
-      const poster = $el.find('img')[0].attr('data-srcset')
+      const poster = $el.find('.show-poster').attr('data-src')
       // console.log(poster)
 
       const _episode = $el.find('.time-bar .show-episode').text().replace(/(\r\n|\n|\r)/gm, "");
