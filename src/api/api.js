@@ -293,23 +293,24 @@ const animeContentHandler = async(id) => {
   return await Promise.all(extra);
 };
 
-const schedule = async(day) =>{
+const schedule = async(day, hideChinese = true) =>{
   const res = await fetch(`${calenderUrl}`);
   const body = await res.text();
   const $ = cheerio.load(body);
   const promises = [];
-  $('div#timetable .timetable-column').eq(Number(day)).each((index , element) =>{ //para el dia
+  $(`div#timetable .${day}`).each((index , element) =>{ //para el dia
     const $element = $(element);
     $element.find('.timetable-column-show').each((i, el) => { //para cada anime
       const $el = $(el);
-      const title = $el.find('h2').text().trim();
-      const id = $el.find('a').attr('href').split('/')[1];
-      // const id = $el.attr('showid');
-      const poster = $el.find('.show-poster').attr('data-src')
-      // console.log(poster)
 
-      const _episode = $el.find('.time-bar .show-episode').text().replace(/(\r\n|\n|\r)/gm, "");
-      const episode = _episode.split('Ep')[1] ;
+      if(hideChinese && $el.attr('chinese') == "true") return; //oculta los chinos
+      if($el.attr('mediatype').includes("ona")) return; //oculta los filtrados por jkanime
+      if($el.hasClass('hidden')) return; //oculta los ya emitidos
+
+      const id = $el.find('.show-link').attr('href').split('/')[1];
+      const poster = $el.find('.show-link .show-poster').attr('data-src')
+      const title = $el.find('.show-link .show-title-bar').text().trim();
+      const episode = $el.find('.time-bar .show-episode').text().replace(/(\r\n|\n|\r)/gm, "");
 
       const _time = $el.find('.time-bar .show-air-time').text().replace(/(\r\n|\n|\r)/gm, "");
       let time = _time.split(' ')[0]
